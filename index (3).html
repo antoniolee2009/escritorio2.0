@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escritório Ladisael Bernardo · Sistema de Gestão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d0d0d;
+  --paper:#0f0f0f;
+  --surface:#161616;
+  --surface2:#1e1e1e;
+  --gold:#c9a84c;
+  --gold2:#e8c96a;
+  --gold-faint:rgba(201,168,76,0.08);
+  --gold-border:rgba(201,168,76,0.22);
+  --faded:rgba(255,255,255,0.07);
+  --muted:rgba(255,255,255,0.35);
+  --text:rgba(255,255,255,0.88);
+  --danger:#c0392b;--warn:#c87941;--ok:#3a7d5a;
+  --serif:'Cormorant Garamond',serif;
+  --mono:'DM Mono',monospace;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--paper);color:var(--text);font-family:var(--serif);min-height:100vh;position:relative;overflow-x:hidden}
+
+/* grain */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:.6}
+
+/* gold line top */
+body::after{content:'';position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);z-index:10;opacity:.7}
+
+.app{max-width:980px;margin:0 auto;padding:2rem 1.5rem;position:relative;z-index:1}
+
+/* ===== HEADER ===== */
+.header{display:grid;grid-template-columns:1fr auto;align-items:end;margin-bottom:2.5rem;padding-bottom:1.25rem;border-bottom:.5px solid var(--gold-border)}
+.logo-block{}
+.logo-pre{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:.35rem}
+.logo-name{font-size:32px;font-weight:300;letter-spacing:.04em;color:#fff;line-height:1}
+.logo-name em{font-style:normal;color:var(--gold)}
+.logo-tagline{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:.4rem}
+.header-right{text-align:right}
+.datestamp{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.05em}
+.oab-badge{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;border:.5px solid var(--gold-border);color:var(--gold);padding:3px 8px;margin-top:6px;display:inline-block}
+
+/* ===== SCORE ROW ===== */
+.score-row{display:grid;grid-template-columns:repeat(5,1fr);border:.5px solid var(--gold-border);margin-bottom:2rem;background:var(--surface)}
+.sc{padding:.9rem .75rem;border-right:.5px solid var(--gold-border);transition:background .2s;cursor:default}
+.sc:last-child{border-right:none}
+.sc:hover{background:var(--gold-faint)}
+.sc-num{font-size:28px;font-weight:300;line-height:1;margin-bottom:3px;letter-spacing:-.02em;color:#fff}
+.sc-num.warn{color:var(--warn)}.sc-num.ok{color:var(--gold)}.sc-num.danger{color:var(--danger)}
+.sc-label{font-size:8px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+@media(max-width:600px){.score-row{grid-template-columns:repeat(3,1fr)}.sc:nth-child(4),.sc:nth-child(5){display:none}}
+
+/* ===== NAV ===== */
+.nav-strip{display:flex;border:.5px solid var(--gold-border);margin-bottom:2rem;overflow-x:auto;background:var(--surface)}
+.npill{flex:1;min-width:75px;padding:9px 4px;text-align:center;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;border-right:.5px solid var(--gold-border);white-space:nowrap}
+.npill:last-child{border-right:none}
+.npill.active{background:var(--gold);color:#0d0d0d;font-weight:400}
+.npill:hover:not(.active){background:var(--gold-faint);color:var(--gold)}
+
+/* ===== VIEWS ===== */
+.view{display:none;animation:fi .3s ease}.view.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ===== SECTION HEADING ===== */
+.sh{font-size:8px;font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
+.sh::after{content:'';flex:1;height:.5px;background:var(--gold-border)}
+
+/* ===== PROCESS CARD ===== */
+.proc{display:grid;grid-template-columns:2.5rem 1fr auto;border:.5px solid var(--faded);margin-bottom:7px;background:var(--surface);transition:border-color .2s}
+.proc:hover{border-color:var(--gold-border)}
+.proc-idx{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;color:var(--gold);border-right:.5px solid var(--faded)}
+.proc-body{padding:10px 12px}
+.proc-num{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:2px}
+.proc-title{font-size:15px;font-weight:400;line-height:1.3;margin-bottom:2px;color:#fff}
+.proc-meta{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.proc-status{padding:0 10px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:5px;border-left:.5px solid var(--faded)}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.dot-red{background:var(--danger)}.dot-amber{background:var(--warn)}.dot-green{background:var(--ok)}
+.prazo-tag{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border:.5px solid;white-space:nowrap}
+.prazo-urgente{border-color:var(--danger);color:var(--danger)}
+.prazo-warn{border-color:var(--warn);color:var(--warn)}
+.prazo-ok{border-color:rgba(255,255,255,.15);color:var(--muted)}
+
+/* ===== DOC GRID ===== */
+.docgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:1.25rem}
+@media(max-width:500px){.docgrid{grid-template-columns:1fr}}
+.doccard{border:.5px solid var(--faded);padding:14px;cursor:pointer;background:var(--surface);transition:all .2s;position:relative;overflow:hidden}
+.doccard::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1.5px;background:var(--gold);transition:width .3s}
+.doccard:hover::after{width:100%}
+.doccard:hover{border-color:var(--gold-border);background:var(--surface2)}
+.doc-roman{font-family:var(--mono);font-size:9px;color:var(--gold);margin-bottom:5px;letter-spacing:.1em}
+.doc-name{font-size:14px;font-weight:400;margin-bottom:2px;color:#fff}
+.doc-desc{font-size:10px;color:var(--muted);font-family:var(--mono)}
+
+/* ===== LEDGER ===== */
+.ledger{width:100%;border-collapse:collapse}
+.ledger th{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);padding:6px 0;border-bottom:.5px solid var(--gold-border);text-align:left}
+.ledger td{padding:8px 0;border-bottom:.5px solid var(--faded);font-size:13px;vertical-align:middle;color:var(--text)}
+.ledger tr:last-child td{border-bottom:none}
+.amount{font-family:var(--mono);font-size:11px;text-align:right}
+.credit{color:#5aad80}.debit{color:var(--danger)}.pending{color:var(--warn)}
+.ledger-total{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-top:.5px solid var(--gold-border);margin-top:3px}
+.lt-label{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.lt-val{font-size:28px;font-weight:300;color:#fff}
+
+/* ===== CLIENTES ===== */
+.cli-entry{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:.5px solid var(--faded)}
+.cli-entry:last-child{border-bottom:none}
+.initials{width:34px;height:34px;border:.5px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;color:var(--gold);background:var(--surface)}
+.cli-name{font-size:15px;font-weight:400;margin-bottom:1px;color:#fff}
+.cli-area{font-size:10px;font-family:var(--mono);color:var(--muted)}
+.cli-btn{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;border:.5px solid var(--gold-border);background:none;color:var(--gold);padding:5px 10px;cursor:pointer;transition:all .2s}
+.cli-btn:hover{background:var(--gold);color:#0d0d0d}
+
+/* ===== AGENDA ===== */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:1rem}
+.cal-head{font-family:var(--mono);font-size:8px;text-align:center;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;padding:4px 0}
+.cal-day{font-family:var(--mono);font-size:11px;text-align:center;padding:6px 2px;border:.5px solid transparent;cursor:default;position:relative;transition:all .15s;color:var(--muted)}
+.cal-day:hover{border-color:var(--gold-border);background:var(--gold-faint)}
+.cal-day.has-event::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gold)}
+.cal-day.today{border-color:var(--gold);color:var(--gold)}
+.cal-day.urgent::after{background:var(--danger)}
+.cal-day.empty{opacity:.15}
+.event-item{display:grid;grid-template-columns:3.5rem 1fr auto;border:.5px solid var(--faded);margin-bottom:6px;background:var(--surface);transition:border-color .2s}
+.event-item:hover{border-color:var(--gold-border)}
+.event-time{font-family:var(--mono);font-size:9px;color:var(--gold);border-right:.5px solid var(--faded);display:flex;align-items:center;justify-content:center;padding:0 6px;text-align:center;line-height:1.4}
+.event-body{padding:8px 11px}
+.event-title{font-size:13px;margin-bottom:1px;color:#fff}
+.event-sub{font-size:10px;font-family:var(--mono);color:var(--muted)}
+.event-badge-wrap{padding:0 10px;display:flex;align-items:center;border-left:.5px solid var(--faded)}
+.ebadge{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border:.5px solid}
+.aud{border-color:var(--ok);color:#5aad80}.praz{border-color:var(--danger);color:var(--danger)}.reu{border-color:var(--warn);color:var(--warn)}
+
+/* ===== CALCULADORA ===== */
+.calc-form{border:.5px solid var(--gold-border);padding:1rem;margin-bottom:1rem;background:var(--surface)}
+.calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+@media(max-width:500px){.calc-row{grid-template-columns:1fr}}
+.calc-field{display:flex;flex-direction:column;gap:4px}
+.calc-label{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.calc-input,.calc-select{font-family:var(--mono);font-size:12px;background:var(--surface2);border:.5px solid var(--faded);color:#fff;padding:7px 9px;width:100%;outline:none;transition:border-color .2s}
+.calc-input:focus,.calc-select:focus{border-color:var(--gold)}
+.calc-select option{background:#1e1e1e}
+.calc-btn{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;border:.5px solid var(--gold);background:var(--gold);color:#0d0d0d;padding:11px 16px;cursor:pointer;width:100%;transition:all .2s;font-weight:400}
+.calc-btn:hover{background:var(--gold2);border-color:var(--gold2)}
+.calc-result{border:.5px solid var(--gold-border);padding:1rem;background:var(--gold-faint);display:none;margin-top:.75rem}
+.result-title{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}
+.result-date{font-size:32px;font-weight:300;margin-bottom:.25rem;color:#fff}
+.result-dias{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.result-warning{font-family:var(--mono);font-size:10px;color:var(--danger);margin-top:.5rem}
+
+/* ===== RISCO ===== */
+.risco-result{display:none;margin-top:1rem}
+.risco-pct{font-size:38px;font-weight:300;color:#fff}
+.risco-nivel{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.risco-bar-bg{height:4px;background:var(--faded);margin:8px 0 4px}
+.risco-bar-fill{height:100%;transition:width .6s ease}
+.risco-item{font-size:12px;padding:6px 0;border-bottom:.5px solid var(--faded);display:flex;gap:8px;align-items:baseline;color:var(--text)}
+.risco-item:last-child{border-bottom:none}
+.risco-bullet{font-family:var(--mono);font-size:9px;color:var(--gold);flex-shrink:0}
+
+/* ===== ANÁLISE ===== */
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1rem}
+@media(max-width:500px){.type-grid{grid-template-columns:repeat(2,1fr)}}
+.tcard{border:.5px solid var(--faded);padding:11px 6px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
+.tcard:hover,.tcard.sel{border-color:var(--gold);background:var(--gold-faint)}
+.tcard-icon{font-size:20px;margin-bottom:5px;display:block;opacity:.5}
+.tcard.sel .tcard-icon{opacity:1}
+.tcard-label{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lex-textarea{width:100%;min-height:150px;background:var(--surface2);border:.5px solid var(--faded);color:#fff;font-family:var(--mono);font-size:11px;line-height:1.65;padding:10px 12px;outline:none;resize:vertical;transition:border-color .2s}
+.lex-textarea:focus{border-color:var(--gold)}
+.lex-textarea::placeholder{color:var(--muted);font-style:italic}
+.action-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:.75rem}
+.act-btn{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:.5px solid var(--faded);background:var(--surface);color:var(--muted);padding:10px 4px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.act-btn:hover{border-color:var(--gold-border);color:var(--gold)}
+.act-btn.primary{border-color:var(--gold);background:var(--gold);color:#0d0d0d}
+.act-btn.primary:hover{background:var(--gold2);border-color:var(--gold2)}
+.act-icon{font-size:15px;opacity:.9}
+.loading-bar{height:2px;background:var(--faded);margin:1rem 0;display:none;overflow:hidden;position:relative}
+.loading-bar.show{display:block}
+.loading-fill{position:absolute;top:0;left:-40%;width:40%;height:100%;background:var(--gold);animation:slide 1.2s ease-in-out infinite}
+@keyframes slide{to{left:100%}}
+.result-panel{margin-top:1.25rem;display:none}.result-panel.show{display:block}
+.res-card{border:.5px solid var(--faded);margin-bottom:8px;background:var(--surface)}
+.res-header{padding:9px 12px;border-bottom:.5px solid var(--faded);display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.res-header:hover{background:var(--gold-faint)}
+.res-title{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.res-badge{font-family:var(--mono);font-size:8px;padding:2px 7px;border:.5px solid var(--gold-border);color:var(--gold)}
+.res-body{padding:12px;font-size:13px;line-height:1.75;color:var(--text)}
+.res-toggle{font-family:var(--mono);font-size:10px;color:var(--gold)}
+.stream-box{background:rgba(201,168,76,.04);border:.5px solid var(--gold-border);padding:12px;font-size:12px;line-height:1.8;font-family:var(--mono);color:var(--text);min-height:60px;white-space:pre-wrap;word-break:break-word}
+.cursor-blink{display:inline-block;width:7px;height:12px;background:var(--gold);vertical-align:middle;animation:blink .7s step-end infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:.75rem}
+.tag{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:.5px solid var(--faded);color:var(--muted)}
+.tag.ok{border-color:var(--ok);color:#5aad80}.tag.gold{border-color:var(--gold-border);color:var(--gold)}
+.arg-card{border:.5px solid var(--faded);margin-bottom:6px;background:var(--surface);transition:border-color .2s}
+.arg-card:hover{border-color:var(--gold-border)}
+.arg-header{display:grid;grid-template-columns:2.25rem 1fr auto}
+.arg-num{font-family:var(--mono);font-size:10px;color:var(--gold);border-right:.5px solid var(--faded);display:flex;align-items:center;justify-content:center}
+.arg-body{padding:9px 11px}
+.arg-title{font-size:14px;font-weight:400;margin-bottom:2px;color:#fff}
+.arg-base{font-size:10px;font-family:var(--mono);color:var(--muted)}
+.arg-expand{padding:0 10px;display:flex;align-items:center;border-left:.5px solid var(--faded)}
+.expand-btn{font-family:var(--mono);font-size:9px;color:var(--gold);border:none;background:none;cursor:pointer}
+.arg-detail{padding:0 11px 10px;font-size:12px;line-height:1.7;color:var(--muted);display:none;border-top:.5px solid var(--faded);padding-top:9px}
+.arg-detail.show{display:block}
+.saved-item{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:.5px solid var(--faded)}
+.saved-item:last-child{border-bottom:none}
+.saved-icon{width:32px;height:32px;border:.5px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--surface)}
+.saved-title{font-size:13px;font-weight:400;color:#fff}
+.saved-sub{font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:1px}
+.s-btn{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;border:.5px solid var(--faded);background:none;color:var(--muted);padding:4px 8px;cursor:pointer;transition:all .2s}
+.s-btn:hover{border-color:var(--gold-border);color:var(--gold)}
+.s-btn.primary{border-color:var(--gold);background:var(--gold);color:#0d0d0d}
+.s-btn.primary:hover{background:var(--gold2)}
+
+/* ===== IA PROMPT ===== */
+.ia-prompt{border:.5px solid var(--gold-border);padding:12px 14px;margin-top:1.25rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:var(--gold-faint);transition:all .2s}
+.ia-prompt:hover{background:rgba(201,168,76,.14);border-color:var(--gold)}
+.ia-label{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.ia-text{font-size:13px;font-style:italic;color:var(--text)}
+.ia-arrow{font-family:var(--mono);font-size:18px;color:var(--gold)}
+
+/* ===== TWO COL ===== */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:500px){.two-col{grid-template-columns:1fr}}
+
+/* ===== MODAL ===== */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-bg.show{display:flex}
+.modal{background:var(--surface);border:.5px solid var(--gold-border);max-width:600px;width:100%;padding:1.5rem;position:relative;max-height:85vh;overflow-y:auto}
+.modal-close{position:absolute;top:12px;right:14px;font-family:var(--mono);font-size:10px;cursor:pointer;color:var(--muted);border:none;background:none;letter-spacing:.08em;text-transform:uppercase}
+.modal-close:hover{color:var(--gold)}
+.modal-title{font-size:20px;font-weight:400;margin-bottom:.25rem;color:#fff}
+.modal-sub{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:1.25rem;letter-spacing:.05em}
+.modal-copy-btn{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;border:.5px solid var(--gold);background:var(--gold);color:#0d0d0d;padding:7px 14px;cursor:pointer;margin-top:.75rem;transition:all .2s}
+.modal-copy-btn:hover{background:var(--gold2)}
+
+/* ===== FOOTER ===== */
+.footer{border-top:.5px solid var(--gold-border);margin-top:3rem;padding-top:1.25rem;display:grid;grid-template-columns:1fr auto;align-items:end}
+.footer-name{font-size:18px;font-weight:300;color:#fff;letter-spacing:.04em}
+.footer-name em{font-style:normal;color:var(--gold)}
+.footer-right{text-align:right}
+.footer-mono{font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+
+/* KEY MODAL */
+.key-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+.key-modal-bg.show{display:flex}
+.key-modal{background:var(--surface);border:.5px solid var(--gold-border);max-width:480px;width:100%;padding:2rem;position:relative}
+.key-modal-title{font-size:22px;font-weight:300;color:#fff;margin-bottom:.25rem}
+.key-modal-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.5rem}
+.key-steps{margin-bottom:1.5rem}
+.key-step{display:flex;gap:12px;align-items:baseline;padding:6px 0;border-bottom:.5px solid var(--faded);font-size:13px;color:var(--text)}
+.key-step:last-child{border-bottom:none}
+.key-step-num{font-family:var(--mono);font-size:9px;color:var(--gold);flex-shrink:0;width:16px}
+.key-input-wrap{display:flex;gap:6px;margin-bottom:.75rem}
+.key-input{flex:1;font-family:var(--mono);font-size:12px;background:var(--surface2);border:.5px solid var(--gold-border);color:#fff;padding:9px 12px;outline:none;transition:border-color .2s}
+.key-input:focus{border-color:var(--gold)}
+.key-save-btn{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;border:.5px solid var(--gold);background:var(--gold);color:#0d0d0d;padding:9px 16px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.key-save-btn:hover{background:var(--gold2)}
+.key-note{font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.6}
+.key-note a{color:var(--gold);text-decoration:none}
+.key-note a:hover{text-decoration:underline}
+.key-status{font-family:var(--mono);font-size:9px;color:#5aad80;margin-top:.5rem;display:none}
+/* config btn */
+.cfg-btn{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;border:.5px solid var(--gold-border);background:none;color:var(--gold);padding:4px 9px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.cfg-btn:hover{background:var(--gold);color:#0d0d0d}
+.cfg-btn.active-key{border-color:#5aad80;color:#5aad80}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo-block">
+      <div class="logo-pre">Sistema de Gestão Jurídica</div>
+      <div class="logo-name"><em>Ladisael Bernardo</em></div>
+      <div class="logo-tagline">Direito Empresarial &amp; Criminal · Advocacia</div>
+    </div>
+    <div class="header-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <div class="datestamp" id="ds"></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div class="oab-badge">OAB · Escritório</div>
+        <button class="cfg-btn" id="cfg-btn" onclick="showKeyModal()">⚙ IA</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SCORES -->
+  <div class="score-row">
+    <div class="sc"><div class="sc-num ok">18</div><div class="sc-label">Clientes</div></div>
+    <div class="sc"><div class="sc-num">29</div><div class="sc-label">Processos</div></div>
+    <div class="sc"><div class="sc-num danger">4</div><div class="sc-label">Prazos</div></div>
+    <div class="sc"><div class="sc-num warn">R$6k</div><div class="sc-label">Em atraso</div></div>
+    <div class="sc"><div class="sc-num ok">2</div><div class="sc-label">Audiências</div></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav-strip">
+    <button class="npill active" onclick="nav('processos',this)">Processos</button>
+    <button class="npill" onclick="nav('agenda',this)">Agenda</button>
+    <button class="npill" onclick="nav('prazos',this)">Prazos</button>
+    <button class="npill" onclick="nav('analise',this)">Análise IA</button>
+    <button class="npill" onclick="nav('argumentos',this)">Argumentos</button>
+    <button class="npill" onclick="nav('confrontar',this)">Confrontar</button>
+    <button class="npill" onclick="nav('documentos',this)">Documentos</button>
+    <button class="npill" onclick="nav('clientes',this)">Clientes</button>
+    <button class="npill" onclick="nav('financeiro',this)">Financeiro</button>
+    <button class="npill" onclick="nav('risco',this)">Risco</button>
+  </nav>
+
+  <!-- ============ PROCESSOS ============ -->
+  <div class="view active" id="v-processos">
+    <div class="sh">Direito empresarial</div>
+    <div class="proc"><div class="proc-idx">I</div><div class="proc-body"><div class="proc-num">1001234-55.2024.8.26.0100 · TJ-SP · 3ª Vara Empresarial</div><div class="proc-title">Grupo Alfa Ltda. <em>vs.</em> Sócio Dissidente</div><div class="proc-meta">Dissolução parcial de sociedade · Apuração de haveres</div></div><div class="proc-status"><div class="status-dot dot-red"></div><div class="prazo-tag prazo-urgente">3 dias</div></div></div>
+    <div class="proc"><div class="proc-idx">II</div><div class="proc-body"><div class="proc-num">0034512-77.2024.8.26.0053 · TJ-SP · 1ª Vara Cível</div><div class="proc-title">Construtora Beta S.A. <em>vs.</em> Fornecedor Omega</div><div class="proc-meta">Inadimplemento contratual · Perdas e danos</div></div><div class="proc-status"><div class="status-dot dot-amber"></div><div class="prazo-tag prazo-warn">6 dias</div></div></div>
+    <div class="proc"><div class="proc-idx">III</div><div class="proc-body"><div class="proc-num">0098712-33.2024.8.26.0100 · TJ-SP · 2ª Vara Empresarial</div><div class="proc-title">Sigma Comércio Ltda.</div><div class="proc-meta">Recuperação judicial · Fase de habilitação de créditos</div></div><div class="proc-status"><div class="status-dot dot-green"></div><div class="prazo-tag prazo-ok">12 dias</div></div></div>
+
+    <div class="sh" style="margin-top:1.5rem">Direito criminal</div>
+    <div class="proc"><div class="proc-idx">IV</div><div class="proc-body"><div class="proc-num">0005678-99.2024.8.26.0050 · TJ-SP · 4ª Vara Criminal</div><div class="proc-title">Defesa: Roberto Farias</div><div class="proc-meta">Estelionato empresarial · Art. 171 CP · Instrução criminal</div></div><div class="proc-status"><div class="status-dot dot-red"></div><div class="prazo-tag prazo-urgente">2 dias</div></div></div>
+    <div class="proc"><div class="proc-idx">V</div><div class="proc-body"><div class="proc-num">0012345-88.2024.8.26.0050 · TJ-SP · 2ª Vara Criminal</div><div class="proc-title">Defesa: Carlos Mendonça</div><div class="proc-meta">Crimes societários · Art. 177 CP · Alegações finais</div></div><div class="proc-status"><div class="status-dot dot-amber"></div><div class="prazo-tag prazo-warn">7 dias</div></div></div>
+
+    <div class="ia-prompt" onclick="abrirIA('Elaborar estratégia de defesa criminal para réu acusado de estelionato empresarial (art. 171 CP), na fase de instrução criminal, com análise de teses absolutórias e nulidades processuais')"><div><div class="ia-label">IA · Estratégia de defesa</div><div class="ia-text">"Elaborar estratégia para defesa criminal de estelionato empresarial"</div></div><div class="ia-arrow">→</div></div>
+  </div>
+
+  <!-- ============ AGENDA ============ -->
+  <div class="view" id="v-agenda">
+    <div class="sh">Março · 2026</div>
+    <div class="cal-grid">
+      <div class="cal-head">Dom</div><div class="cal-head">Seg</div><div class="cal-head">Ter</div><div class="cal-head">Qua</div><div class="cal-head">Qui</div><div class="cal-head">Sex</div><div class="cal-head">Sáb</div>
+      <div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div>
+      <div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div><div class="cal-day today">13</div><div class="cal-day">14</div>
+      <div class="cal-day urgent has-event">15</div><div class="cal-day urgent has-event">16</div><div class="cal-day">17</div><div class="cal-day has-event">18</div><div class="cal-day">19</div><div class="cal-day has-event">20</div><div class="cal-day">21</div>
+      <div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day has-event">24</div><div class="cal-day">25</div><div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28</div>
+      <div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day">31</div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+    </div>
+    <div class="sh">Próximos eventos</div>
+    <div class="event-item"><div class="event-time">15 Mar<br>09h00</div><div class="event-body"><div class="event-title">Audiência de instrução criminal</div><div class="event-sub">Defesa: Roberto Farias · 4ª Vara Criminal TJ-SP</div></div><div class="event-badge-wrap"><span class="ebadge praz">Urgente</span></div></div>
+    <div class="event-item"><div class="event-time">16 Mar<br>14h00</div><div class="event-body"><div class="event-title">Prazo — Alegações finais</div><div class="event-sub">Defesa: Carlos Mendonça · Crimes societários</div></div><div class="event-badge-wrap"><span class="ebadge praz">Prazo</span></div></div>
+    <div class="event-item"><div class="event-time">18 Mar<br>10h30</div><div class="event-body"><div class="event-title">Audiência de conciliação</div><div class="event-sub">Construtora Beta vs. Fornecedor Omega · TJ-SP</div></div><div class="event-badge-wrap"><span class="ebadge aud">Audiência</span></div></div>
+    <div class="event-item"><div class="event-time">20 Mar<br>11h00</div><div class="event-body"><div class="event-title">Reunião estratégica</div><div class="event-sub">Grupo Alfa Ltda. · Dissolução societária</div></div><div class="event-badge-wrap"><span class="ebadge reu">Reunião</span></div></div>
+    <div class="event-item"><div class="event-time">24 Mar<br>15h00</div><div class="event-body"><div class="event-title">Perícia contábil</div><div class="event-sub">Sigma Comércio · Recuperação judicial</div></div><div class="event-badge-wrap"><span class="ebadge reu">Perícia</span></div></div>
+    <div class="ia-prompt" onclick="abrirIA('Preparar roteiro completo para audiência de instrução criminal de defesa por acusação de estelionato empresarial: perguntas para testemunhas, pontos de contradição a explorar e requerimentos a fazer em plenário')"><div><div class="ia-label">IA · Preparar audiência criminal</div><div class="ia-text">"Roteiro e estratégia para audiência de instrução de amanhã"</div></div><div class="ia-arrow">→</div></div>
+  </div>
+
+  <!-- ============ PRAZOS ============ -->
+  <div class="view" id="v-prazos">
+    <div class="sh">Calculadora processual</div>
+    <div class="calc-form">
+      <div class="calc-row">
+        <div class="calc-field"><div class="calc-label">Data de início</div><input class="calc-input" type="date" id="prazo-inicio"></div>
+        <div class="calc-field"><div class="calc-label">Tipo de prazo</div>
+          <select class="calc-select" id="prazo-tipo">
+            <option value="15">Contestação cível — 15 dias úteis</option>
+            <option value="10">Alegações finais criminais — 10 dias</option>
+            <option value="8">Recurso em sentido estrito — 5 dias</option>
+            <option value="15">Apelação criminal — 5 dias</option>
+            <option value="15">Apelação cível — 15 dias</option>
+            <option value="5">Embargos de declaração — 5 dias</option>
+            <option value="15">Razões de recurso — 8 dias</option>
+            <option value="custom">Personalizado</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-row" id="custom-row" style="display:none">
+        <div class="calc-field"><div class="calc-label">Dias úteis</div><input class="calc-input" type="number" id="prazo-custom" placeholder="Ex: 10" min="1"></div>
+      </div>
+      <button class="calc-btn" onclick="calcPrazo()">Calcular prazo fatal</button>
+      <div class="calc-result" id="calc-result">
+        <div class="result-title">Prazo fatal</div>
+        <div class="result-date" id="result-date">—</div>
+        <div class="result-dias" id="result-dias"></div>
+        <div class="result-warning" id="result-warning"></div>
+      </div>
+    </div>
+    <div class="sh">Prazos ativos</div>
+    <div class="proc"><div class="proc-idx" style="font-size:8px">CR</div><div class="proc-body"><div class="proc-num">Instrução criminal · Defesa R. Farias</div><div class="proc-title" style="font-size:13px">Vence 15/03/2026</div></div><div class="proc-status"><div class="prazo-tag prazo-urgente">2 dias</div></div></div>
+    <div class="proc"><div class="proc-idx" style="font-size:8px">CR</div><div class="proc-body"><div class="proc-num">Alegações finais · C. Mendonça</div><div class="proc-title" style="font-size:13px">Vence 16/03/2026</div></div><div class="proc-status"><div class="prazo-tag prazo-urgente">3 dias</div></div></div>
+    <div class="proc"><div class="proc-idx" style="font-size:8px">EMP</div><div class="proc-body"><div class="proc-num">Contestação · Grupo Alfa vs. Sócio</div><div class="proc-title" style="font-size:13px">Vence 17/03/2026</div></div><div class="proc-status"><div class="prazo-tag prazo-warn">4 dias</div></div></div>
+    <div class="proc"><div class="proc-idx" style="font-size:8px">EMP</div><div class="proc-body"><div class="proc-num">Impugnação de crédito · Sigma</div><div class="proc-title" style="font-size:13px">Vence 26/03/2026</div></div><div class="proc-status"><div class="prazo-tag prazo-ok">13 dias</div></div></div>
+  </div>
+
+  <!-- ============ ANÁLISE IA ============ -->
+  <div class="view" id="v-analise">
+    <div class="sh">Tipo de documento</div>
+    <div class="type-grid">
+      <div class="tcard sel" onclick="selType(this,'Petição / Denúncia criminal')"><span class="tcard-icon">⚖️</span><div class="tcard-label">Peça criminal</div></div>
+      <div class="tcard" onclick="selType(this,'Petição empresarial')"><span class="tcard-icon">🏢</span><div class="tcard-label">Peça empresarial</div></div>
+      <div class="tcard" onclick="selType(this,'Sentença / Acórdão')"><span class="tcard-icon">🏛️</span><div class="tcard-label">Sentença</div></div>
+      <div class="tcard" onclick="selType(this,'Autos do processo')"><span class="tcard-icon">📁</span><div class="tcard-label">Autos</div></div>
+    </div>
+    <div class="sh">Cole o texto da peça</div>
+    <textarea class="lex-textarea" id="peca-texto" placeholder="Cole aqui o texto da denúncia criminal, petição empresarial, sentença, acórdão ou autos… O sistema irá resumir, extrair os pontos críticos e gerar argumentos de defesa estratégicos."></textarea>
+    <div class="action-row">
+      <button class="act-btn" onclick="analisar('resumo')"><span class="act-icon">📝</span>Resumir</button>
+      <button class="act-btn" onclick="analisar('pontos')"><span class="act-icon">🔍</span>Pontos críticos</button>
+      <button class="act-btn primary" onclick="analisar('completo')"><span class="act-icon">⚡</span>Análise completa</button>
+    </div>
+    <div class="loading-bar" id="loading"><div class="loading-fill"></div></div>
+    <div class="result-panel" id="result-panel">
+      <div class="sh">Resultado</div>
+      <div class="res-card" id="card-resumo" style="display:none"><div class="res-header" onclick="toggle('body-resumo','tog-resumo')"><div class="res-title">Resumo executivo</div><div style="display:flex;gap:8px;align-items:center"><span class="res-badge" id="tipo-badge">Peça criminal</span><span class="res-toggle" id="tog-resumo">▾</span></div></div><div class="res-body" id="body-resumo"><div class="stream-box" id="stream-resumo"></div></div></div>
+      <div class="res-card" id="card-pontos" style="display:none"><div class="res-header" onclick="toggle('body-pontos','tog-pontos')"><div class="res-title">Pontos críticos</div><span class="res-toggle" id="tog-pontos">▾</span></div><div class="res-body" id="body-pontos"><div class="stream-box" id="stream-pontos"></div></div></div>
+      <div class="res-card" id="card-args" style="display:none"><div class="res-header" onclick="toggle('body-args','tog-args')"><div class="res-title">Argumentos de defesa sugeridos</div><span class="res-toggle" id="tog-args">▾</span></div><div class="res-body" id="body-args"><div class="stream-box" id="stream-args"></div></div></div>
+      <div id="tags-row" class="tag-row" style="display:none"></div>
+    </div>
+    <div class="sh" style="margin-top:1.5rem">Peças de exemplo</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="s-btn" onclick="carregarExemplo('criminal')">Denúncia — Estelionato empresarial</button>
+      <button class="s-btn" onclick="carregarExemplo('empresarial')">Petição — Dissolução societária</button>
+      <button class="s-btn" onclick="carregarExemplo('sentenca')">Sentença — Crimes societários</button>
+    </div>
+  </div>
+
+  <!-- ============ ARGUMENTOS ============ -->
+  <div class="view" id="v-argumentos">
+    <div class="sh">Gerador de argumentos jurídicos</div>
+    <div class="two-col" style="margin-bottom:.75rem">
+      <div class="calc-field"><div class="calc-label">Área do direito</div>
+        <select class="calc-select" id="arg-area">
+          <option>Direito criminal — crimes empresariais</option>
+          <option>Direito criminal — crimes societários</option>
+          <option>Direito criminal — lavagem de dinheiro</option>
+          <option>Direito empresarial — contratos</option>
+          <option>Direito empresarial — societário</option>
+          <option>Recuperação judicial e falência</option>
+        </select>
+      </div>
+      <div class="calc-field"><div class="calc-label">Tipo de peça</div>
+        <select class="calc-select" id="arg-peca">
+          <option>Resposta à acusação</option>
+          <option>Alegações finais — defesa</option>
+          <option>Memoriais defensivos</option>
+          <option>Recurso em sentido estrito</option>
+          <option>Apelação criminal</option>
+          <option>Habeas corpus</option>
+          <option>Contestação cível</option>
+          <option>Impugnação de crédito</option>
+        </select>
+      </div>
+    </div>
+    <textarea class="lex-textarea" id="arg-contexto" style="min-height:100px" placeholder="Descreva o caso: acusação ou pedido, fatos relevantes, provas disponíveis, posição do cliente, o que deseja argumentar…"></textarea>
+    <button class="calc-btn" style="margin-top:.75rem" onclick="gerarArgumentos()">⚡ Gerar argumentos com IA</button>
+    <div class="loading-bar" id="loading-args"><div class="loading-fill"></div></div>
+    <div id="args-output" style="display:none;margin-top:1rem">
+      <div class="sh">Argumentos gerados</div>
+      <div id="args-list"></div>
+      <div class="ia-prompt" id="ia-desenvolver" style="display:none">
+        <div><div class="ia-label">IA · Desenvolver em peça completa</div><div class="ia-text" id="ia-dev-text">"Redigir a peça completa com estes argumentos"</div></div>
+        <div class="ia-arrow">→</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CONFRONTAR ============ -->
+  <div class="view" id="v-confrontar">
+    <div class="sh">Confrontar peças</div>
+    <p style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:1rem;line-height:1.65">Cole a denúncia do MP ou a petição do adversário e sua defesa. A IA identifica os pontos frágeis da acusação e sugere como rebatê-los.</p>
+    <div class="two-col" style="margin-bottom:.75rem">
+      <div><div class="sh">Peça da acusação / adversário</div><textarea class="lex-textarea" id="peca-adv" style="min-height:130px" placeholder="Cole aqui a denúncia criminal, petição adversária, recurso do MP…"></textarea></div>
+      <div><div class="sh">Sua defesa (opcional)</div><textarea class="lex-textarea" id="peca-def" style="min-height:130px" placeholder="Cole sua resposta à acusação, contestação ou defesa atual…"></textarea></div>
+    </div>
+    <button class="calc-btn" onclick="confrontar()">⚔️ Confrontar e identificar pontos fracos da acusação</button>
+    <div class="loading-bar" id="loading-conf"><div class="loading-fill"></div></div>
+    <div id="conf-output" style="display:none;margin-top:1rem">
+      <div class="sh">Análise de confronto</div>
+      <div class="stream-box" id="stream-conf"></div>
+      <div class="ia-prompt" style="margin-top:.75rem" id="ia-conf-btn"><div><div class="ia-label">IA · Desenvolver defesa completa</div><div class="ia-text">"Redigir resposta à acusação ou alegações finais completas"</div></div><div class="ia-arrow">→</div></div>
+    </div>
+  </div>
+
+  <!-- ============ DOCUMENTOS ============ -->
+  <div class="view" id="v-documentos">
+    <div class="sh">Criminal</div>
+    <div class="docgrid">
+      <div class="doccard" onclick="abrirIA('Gerar resposta à acusação criminal completa, com arguição de nulidades, exceções e defesa preliminar de mérito, para crime de estelionato empresarial (art. 171 CP)')"><div class="doc-roman">I</div><div class="doc-name">Resposta à acusação</div><div class="doc-desc">Criminal · Art. 396-A CPP</div></div>
+      <div class="doccard" onclick="abrirIA('Gerar alegações finais defensivas completas para processo criminal por crime empresarial, com análise das provas, teses absolutórias e subsidiárias de desclassificação')"><div class="doc-roman">II</div><div class="doc-name">Alegações finais</div><div class="doc-desc">Defesa · Teses absolutórias</div></div>
+      <div class="doccard" onclick="abrirIA('Gerar petição de habeas corpus por excesso de prazo na instrução criminal, com fundamentos no art. 5º LXVIII CF e jurisprudência do STJ e STF')"><div class="doc-roman">III</div><div class="doc-name">Habeas corpus</div><div class="doc-desc">Excesso de prazo · Ilegalidade</div></div>
+      <div class="doccard" onclick="abrirIA('Gerar apelação criminal defensiva contra sentença condenatória por crimes empresariais, com pedido subsidiário de redução da pena e regime menos gravoso')"><div class="doc-roman">IV</div><div class="doc-name">Apelação criminal</div><div class="doc-desc">Defesa · Reforma de sentença</div></div>
+    </div>
+    <div class="sh">Empresarial</div>
+    <div class="docgrid">
+      <div class="doccard" onclick="abrirIA('Gerar petição inicial de ação de dissolução parcial de sociedade por quebra de affectio societatis, com pedido de apuração de haveres e tutela de urgência')"><div class="doc-roman">V</div><div class="doc-name">Dissolução societária</div><div class="doc-desc">Affectio societatis · Haveres</div></div>
+      <div class="doccard" onclick="abrirIA('Gerar contrato social completo para sociedade empresária limitada, com cláusulas de resolução de conflitos, direito de preferência e dissolução')"><div class="doc-roman">VI</div><div class="doc-name">Contrato social</div><div class="doc-desc">Ltda. · Cláusulas de proteção</div></div>
+      <div class="doccard" onclick="abrirIA('Gerar petição de habilitação de crédito em processo de recuperação judicial, com documentação necessária e impugnação de eventual exclusão')"><div class="doc-roman">VII</div><div class="doc-name">Habilitação de crédito</div><div class="doc-desc">Recuperação judicial</div></div>
+      <div class="doccard" onclick="abrirIA('Gerar contrato de honorários advocatícios para área criminal e empresarial, com cláusula de êxito, sigilo profissional e forma de pagamento')"><div class="doc-roman">VIII</div><div class="doc-name">Contrato de honorários</div><div class="doc-desc">Criminal &amp; Empresarial</div></div>
+    </div>
+  </div>
+
+  <!-- ============ CLIENTES ============ -->
+  <div class="view" id="v-clientes">
+    <div class="sh">Carteira ativa</div>
+    <div class="cli-entry"><div class="initials">GA</div><div><div class="cli-name">Grupo Alfa Ltda.</div><div class="cli-area">Empresarial · Dissolução societária · Ativo</div></div><button class="cli-btn" onclick="abrirIA('Resumo estratégico do cliente Grupo Alfa Ltda.: situação do processo de dissolução parcial, próximas etapas, riscos e recomendações para a reunião')">Dossiê →</button></div>
+    <div class="cli-entry"><div class="initials">CB</div><div><div class="cli-name">Construtora Beta S.A.</div><div class="cli-area">Empresarial · Inadimplemento contratual · Ativo</div></div><button class="cli-btn" onclick="abrirIA('Relatório executivo para a Construtora Beta S.A. sobre o processo de inadimplemento contratual: estratégia, riscos financeiros e próximos passos')">Dossiê →</button></div>
+    <div class="cli-entry"><div class="initials">RF</div><div><div class="cli-name">Roberto Farias</div><div class="cli-area">Criminal · Estelionato empresarial · Instrução</div></div><button class="cli-btn" onclick="abrirIA('Comunicado ao cliente Roberto Farias sobre o andamento da instrução criminal por estelionato, em linguagem clara, sem jargões, explicando os próximos passos e as teses de defesa')">Dossiê →</button></div>
+    <div class="cli-entry"><div class="initials">CM</div><div><div class="cli-name">Carlos Mendonça</div><div class="cli-area">Criminal · Crimes societários · Alegações finais</div></div><button class="cli-btn" onclick="abrirIA('Comunicado ao cliente Carlos Mendonça sobre a fase de alegações finais em processo por crimes societários, explicando as teses de defesa e chances de absolvição')">Dossiê →</button></div>
+    <div class="cli-entry"><div class="initials">SC</div><div><div class="cli-name">Sigma Comércio Ltda.</div><div class="cli-area">Empresarial · Recuperação judicial · Ativo</div></div><button class="cli-btn" onclick="abrirIA('Relatório sobre a situação da recuperação judicial da Sigma Comércio Ltda.: fase atual, créditos habilitados, próximas audiências e riscos de convolação em falência')">Dossiê →</button></div>
+    <div class="ia-prompt" onclick="abrirIA('Iniciar cadastro guiado de novo cliente para escritório de advocacia criminal e empresarial. Faça as perguntas necessárias uma a uma')"><div><div class="ia-label">IA · Novo cliente</div><div class="ia-text">"Iniciar cadastro guiado passo a passo"</div></div><div class="ia-arrow">→</div></div>
+  </div>
+
+  <!-- ============ FINANCEIRO ============ -->
+  <div class="view" id="v-financeiro">
+    <div class="sh">Livro-caixa · Março 2026</div>
+    <table class="ledger">
+      <thead><tr><th>Cliente</th><th>Descrição</th><th style="text-align:right">Valor</th></tr></thead>
+      <tbody>
+        <tr><td>Grupo Alfa</td><td style="font-size:10px;color:var(--muted);font-family:var(--mono)">Honorários — empresarial · parcela 1/3</td><td class="amount credit">+ R$15.000</td></tr>
+        <tr><td>Construtora Beta</td><td style="font-size:10px;color:var(--muted);font-family:var(--mono)">Honorários — contencioso empresarial</td><td class="amount credit">+ R$12.000</td></tr>
+        <tr><td>R. Farias</td><td style="font-size:10px;color:var(--muted);font-family:var(--mono)">Honorários — defesa criminal</td><td class="amount credit">+ R$18.000</td></tr>
+        <tr><td>C. Mendonça</td><td style="font-size:10px;color:var(--muted);font-family:var(--mono)">Honorários — parcela 2/4 · em atraso</td><td class="amount pending">⟳ R$6.000</td></tr>
+        <tr><td>Sigma Comércio</td><td style="font-size:10px;color:var(--muted);font-family:var(--mono)">Honorários — recuperação judicial</td><td class="amount credit">+ R$8.000</td></tr>
+        <tr><td>Escritório</td><td style="font-size:10px;color:var(--muted);font-family:var(--mono)">Custas e diligências</td><td class="amount debit">− R$2.400</td></tr>
+        <tr><td>Escritório</td><td style="font-size:10px;color:var(--muted);font-family:var(--mono)">Despesas operacionais</td><td class="amount debit">− R$4.200</td></tr>
+      </tbody>
+    </table>
+    <div class="ledger-total"><div class="lt-label">Saldo líquido</div><div class="lt-val">R$ 46.400</div></div>
+    <div class="two-col" style="margin-top:1rem">
+      <div class="ia-prompt" style="margin-top:0" onclick="abrirIA('Gerar recibo de honorários advocatícios para defesa criminal com todos os dados legais necessários e descrição dos serviços prestados')"><div><div class="ia-label">Recibo</div><div class="ia-text">"Gerar recibo de honorários"</div></div><div class="ia-arrow">→</div></div>
+      <div class="ia-prompt" style="margin-top:0" onclick="abrirIA('Mensagem profissional de cobrança de honorários em atraso para cliente criminal, tom respeitoso mas firme, para enviar por WhatsApp')"><div><div class="ia-label">Cobrança</div><div class="ia-text">"Mensagem WhatsApp de cobrança"</div></div><div class="ia-arrow">→</div></div>
+    </div>
+    <div class="ia-prompt" onclick="abrirIA('Relatório financeiro completo do Escritório Ladisael Bernardo de março 2026: análise de receitas por área (criminal/empresarial), inadimplência, despesas e projeção para abril')"><div><div class="ia-label">IA · Relatório mensal</div><div class="ia-text">"Relatório financeiro com análise por área de atuação"</div></div><div class="ia-arrow">→</div></div>
+  </div>
+
+  <!-- ============ RISCO ============ -->
+  <div class="view" id="v-risco">
+    <div class="sh">Análise de risco processual</div>
+    <div class="calc-form">
+      <div class="calc-row">
+        <div class="calc-field"><div class="calc-label">Área do direito</div>
+          <select class="calc-select" id="r-area">
+            <option value="criminal-empresa">Criminal empresarial</option>
+            <option value="criminal-societario">Crimes societários</option>
+            <option value="criminal-lavagem">Lavagem de dinheiro</option>
+            <option value="empresarial-contrato">Empresarial — contratos</option>
+            <option value="empresarial-societario">Empresarial — societário</option>
+            <option value="recuperacao">Recuperação judicial</option>
+          </select>
+        </div>
+        <div class="calc-field"><div class="calc-label">Posição do cliente</div>
+          <select class="calc-select" id="r-posicao">
+            <option value="reu-criminal">Réu / Acusado</option>
+            <option value="autor">Autor / Requerente</option>
+            <option value="reu-civel">Réu cível</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-row">
+        <div class="calc-field"><div class="calc-label">Fase processual</div>
+          <select class="calc-select" id="r-fase">
+            <option value="inicial">Inquérito / Fase inicial</option>
+            <option value="instrucao">Instrução criminal / Provas</option>
+            <option value="sentenca">Pós-sentença</option>
+            <option value="recurso">Recurso / Grau superior</option>
+          </select>
+        </div>
+        <div class="calc-field"><div class="calc-label">Força das provas da defesa</div>
+          <select class="calc-select" id="r-prova">
+            <option value="forte">Forte — documentos e perícias</option>
+            <option value="media">Média — provas parciais</option>
+            <option value="fraca">Fraca — apenas alegações</option>
+          </select>
+        </div>
+      </div>
+      <button class="calc-btn" onclick="calcRisco()">Calcular perfil de risco</button>
+    </div>
+    <div class="risco-result" id="risco-result">
+      <div class="sh">Perfil de risco</div>
+      <div class="risco-pct" id="r-pct">—</div>
+      <div class="risco-nivel" id="r-nivel"></div>
+      <div class="risco-bar-bg"><div class="risco-bar-fill" id="r-bar"></div></div>
+      <div id="r-fatores" style="margin-top:.75rem"></div>
+      <div class="ia-prompt" style="margin-top:1rem" id="ia-risco-btn"><div><div class="ia-label">IA · Estratégia de defesa</div><div class="ia-text" id="r-ia-text">"Analisar melhores estratégias para este caso"</div></div><div class="ia-arrow">→</div></div>
+    </div>
+  </div>
+
+  <!-- KEY MODAL -->
+  <div class="key-modal-bg" id="key-modal-bg" onclick="closeKeyModal(event)">
+    <div class="key-modal">
+      <div class="key-modal-title">Configurar chave de IA</div>
+      <div class="key-modal-sub">Necessário para usar os recursos de inteligência artificial</div>
+      <div class="key-steps">
+        <div class="key-step"><span class="key-step-num">1</span><span>Acesse <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> e crie uma conta gratuita</span></div>
+        <div class="key-step"><span class="key-step-num">2</span><span>Vá em <strong style="color:#fff">API Keys</strong> → <strong style="color:#fff">Create Key</strong></span></div>
+        <div class="key-step"><span class="key-step-num">3</span><span>Copie a chave (começa com <span style="color:var(--gold);font-family:var(--mono)">sk-ant-</span>) e cole abaixo</span></div>
+      </div>
+      <div class="key-input-wrap">
+        <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-..." autocomplete="off">
+        <button class="key-save-btn" onclick="saveKey()">Salvar</button>
+      </div>
+      <div class="key-status" id="key-status">✓ Chave salva com sucesso</div>
+      <div class="key-note">
+        🔒 A chave é salva apenas no <strong style="color:var(--text)">seu navegador</strong> (localStorage). 
+        Ninguém mais tem acesso. Para remover, clique em <span style="color:var(--gold);cursor:pointer" onclick="removeKey()">remover chave</span>.
+        <br><br>
+        Custo estimado: menos de <strong style="color:var(--text)">R$ 0,05 por consulta</strong>.
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div>
+      <div class="footer-name"><em>Ladisael Bernardo</em></div>
+      <div class="footer-mono">Direito Empresarial &amp; Criminal · Sistema de Gestão com IA</div>
+    </div>
+    <div class="footer-right">
+      <div class="footer-mono">Powered by Claude · Anthropic</div>
+      <div class="footer-mono" style="margin-top:3px">Uso interno do escritório</div>
+    </div>
+  </footer>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="fecharModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal(null,true)">✕ fechar</button>
+    <div class="modal-title">Assistente Jurídico IA</div>
+    <div class="modal-sub" id="modal-prompt-preview"></div>
+    <div class="loading-bar show" id="modal-loading"><div class="loading-fill"></div></div>
+    <div class="stream-box" id="modal-stream" style="min-height:140px;max-height:420px;overflow-y:auto"></div>
+    <div style="display:flex;gap:6px;margin-top:.75rem">
+      <button class="modal-copy-btn" onclick="copiarModal()">Copiar texto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const d=new Date();
+document.getElementById('ds').textContent=d.getDate()+' de '+months[d.getMonth()]+' de '+d.getFullYear();
+document.getElementById('prazo-inicio').valueAsDate=d;
+
+function nav(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.npill').forEach(b=>b.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+async function callClaude(prompt){
+  const key=localStorage.getItem('lb_api_key')||'';
+  if(!key){showKeyModal();throw new Error('Configure sua chave de API primeiro.');}
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1800,messages:[{role:'user',content:prompt}]})
+  });
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Erro na API');}
+  const data=await r.json();
+  return data.content.map(i=>i.text||'').join('');
+}
+
+async function streamToEl(elId,text,delay=8){
+  const el=document.getElementById(elId);el.innerHTML='';
+  for(let i=0;i<text.length;i++){
+    el.textContent+=text[i];
+    if(i%4===0)await new Promise(r=>setTimeout(r,delay));
+  }
+}
+
+function setLoading(id,on){const el=document.getElementById(id);if(el)el.style.display=on?'block':'none';}
+
+async function abrirIA(prompt){
+  const bg=document.getElementById('modal-bg');bg.classList.add('show');
+  document.getElementById('modal-prompt-preview').textContent=prompt.substring(0,80)+'…';
+  document.getElementById('modal-stream').textContent='';
+  document.getElementById('modal-loading').style.display='block';
+  try{
+    const sys='Você é um advogado sênior brasileiro especialista em direito empresarial e direito criminal. Responda em português com linguagem jurídica precisa e profissional, voltada para o Escritório Ladisael Bernardo.';
+    const res=await callClaude(sys+'\n\n'+prompt);
+    document.getElementById('modal-loading').style.display='none';
+    await streamToEl('modal-stream',res);
+  }catch(e){
+    document.getElementById('modal-loading').style.display='none';
+    document.getElementById('modal-stream').textContent='Erro: '+e.message;
+  }
+}
+
+function fecharModal(e,force){if(force||e.target===document.getElementById('modal-bg'))document.getElementById('modal-bg').classList.remove('show');}
+function copiarModal(){navigator.clipboard.writeText(document.getElementById('modal-stream').textContent).then(()=>alert('Texto copiado!'));}
+
+let tipoAtual='Peça criminal';
+function selType(el,tipo){document.querySelectorAll('.tcard').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');tipoAtual=tipo;}
+function toggle(bId,tId){const b=document.getElementById(bId);const t=document.getElementById(tId);const open=b.style.display!=='none';b.style.display=open?'none':'block';t.textContent=open?'▸':'▾';}
+
+async function analisar(modo){
+  const texto=document.getElementById('peca-texto').value.trim();
+  if(!texto||texto.length<30){alert('Cole o texto da peça (mín. 30 caracteres).');return;}
+  setLoading('loading',true);
+  document.getElementById('result-panel').classList.add('show');
+  ['card-resumo','card-pontos','card-args'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('tags-row').style.display='none';
+  document.getElementById('tipo-badge').textContent=tipoAtual;
+  const sys='Você é um advogado sênior brasileiro especialista em direito empresarial e criminal. Responda em português com linguagem jurídica precisa.';
+  try{
+    if(modo==='resumo'||modo==='completo'){
+      document.getElementById('card-resumo').style.display='block';
+      document.getElementById('stream-resumo').textContent='';
+      const res=await callClaude(sys+'\n\nAnalise esta '+tipoAtual+' e forneça RESUMO EXECUTIVO (3-4 parágrafos): partes, objeto, pedidos/acusação, fundamentos e situação atual.\n\n'+texto.substring(0,3000));
+      await streamToEl('stream-resumo',res);
+    }
+    if(modo==='pontos'||modo==='completo'){
+      document.getElementById('card-pontos').style.display='block';
+      document.getElementById('stream-pontos').textContent='';
+      const res=await callClaude(sys+'\n\nAnalise esta '+tipoAtual+' e liste 4-6 PONTOS CRÍTICOS: vulnerabilidades da acusação/parte contrária, vícios processuais, falhas probatórias, nulidades e oportunidades para a defesa.\n\n'+texto.substring(0,3000));
+      await streamToEl('stream-pontos',res);
+    }
+    if(modo==='completo'){
+      document.getElementById('card-args').style.display='block';
+      document.getElementById('stream-args').textContent='';
+      const res=await callClaude(sys+'\n\nCom base nesta '+tipoAtual+', sugira 4 ARGUMENTOS ESTRATÉGICOS DE DEFESA. Para cada um: título, fundamento legal (artigos CP/CPP, súmulas STJ/STF) e como desenvolver.\n\n'+texto.substring(0,3000));
+      await streamToEl('stream-args',res);
+    }
+    document.getElementById('tags-row').style.display='flex';
+    document.getElementById('tags-row').innerHTML='<span class="tag gold">'+tipoAtual+'</span><span class="tag ok">Analisado por IA</span><span class="tag">Escritório Ladisael Bernardo</span>';
+  }catch(e){
+    document.getElementById('card-resumo').style.display='block';
+    document.getElementById('stream-resumo').textContent='Erro: '+e.message;
+  }
+  setLoading('loading',false);
+}
+
+async function gerarArgumentos(){
+  const area=document.getElementById('arg-area').value;
+  const peca=document.getElementById('arg-peca').value;
+  const ctx=document.getElementById('arg-contexto').value.trim();
+  if(!ctx||ctx.length<20){alert('Descreva o caso.');return;}
+  setLoading('loading-args',true);
+  document.getElementById('args-output').style.display='none';
+  const prompt='Você é um advogado sênior especialista em direito criminal e empresarial brasileiro. Gere 5 argumentos jurídicos sólidos para uma '+peca+' na área de '+area+'.\n\nCaso: '+ctx+'\n\nPara cada argumento:\nNº. TÍTULO\nFundamento: [artigos CP/CPP/Lei específica, súmulas STJ/STF]\nDesenvolvimento: [como redigir na peça, 2-3 linhas]\n---';
+  try{
+    const res=await callClaude(prompt);
+    const lista=document.getElementById('args-list');lista.innerHTML='';
+    const linhas=res.split('\n');const args=[];let argAtual=null;let detAtual='';
+    for(const l of linhas){const m=l.match(/^(\d+)\.\s+(.+)/);if(m){if(argAtual)args.push({title:argAtual,detail:detAtual.trim()});argAtual=m[2];detAtual='';}else if(argAtual)detAtual+=l+'\n';}
+    if(argAtual)args.push({title:argAtual,detail:detAtual.trim()});
+    const romanos=['I','II','III','IV','V','VI'];
+    (args.length?args:[{title:'Argumentos gerados',detail:res}]).forEach((a,i)=>{
+      const el=document.createElement('div');el.className='arg-card';
+      const base=a.detail.match(/Fundamento[:\s]+([^\n]+)/i)?.[1]||'Fundamento legal';
+      el.innerHTML='<div class="arg-header"><div class="arg-num">'+(romanos[i]||i+1)+'</div><div class="arg-body"><div class="arg-title">'+a.title.replace(/\*\*/g,'')+'</div><div class="arg-base">'+base.substring(0,60)+'</div></div><div class="arg-expand"><button class="expand-btn" onclick="expandArg(this)">▾ ver</button></div></div><div class="arg-detail">'+a.detail.replace(/\n/g,'<br>')+'</div>';
+      lista.appendChild(el);
+    });
+    document.getElementById('args-output').style.display='block';
+    document.getElementById('ia-desenvolver').style.display='flex';
+    document.getElementById('ia-dev-text').textContent='"Redigir '+peca+' completa com estes argumentos"';
+    document.getElementById('ia-desenvolver').onclick=()=>abrirIA('Redigir '+peca+' completa na área de '+area+' usando:\n\n'+res.substring(0,800)+'\n\nContexto: '+ctx);
+  }catch(e){
+    document.getElementById('args-list').innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Erro: '+e.message+'</div>';
+    document.getElementById('args-output').style.display='block';
+  }
+  setLoading('loading-args',false);
+}
+
+function expandArg(btn){const d=btn.closest('.arg-card').querySelector('.arg-detail');const open=d.classList.toggle('show');btn.textContent=open?'▴ fechar':'▾ ver';}
+
+async function confrontar(){
+  const adv=document.getElementById('peca-adv').value.trim();
+  if(!adv||adv.length<30){alert('Cole a peça da acusação ou adversário.');return;}
+  const def=document.getElementById('peca-def').value.trim();
+  setLoading('loading-conf',true);
+  document.getElementById('conf-output').style.display='none';
+  document.getElementById('stream-conf').textContent='';
+  const prompt='Você é um advogado criminalista e empresarialista sênior brasileiro.\n\nAnalise a peça da acusação/adversário:\n1. Identifique 4-6 pontos FRÁGEIS: falhas probatórias, vícios processuais, nulidades, contradições\n2. Indique oportunidades de absolvição ou redução de pena\n3. Sugira como REBATER cada ponto na defesa\n4. Avalie a força geral da acusação (alta/média/baixa)\n\nPEÇA DA ACUSAÇÃO/ADVERSÁRIO:\n'+adv.substring(0,2500)+(def?'\n\nDEFESA ATUAL:\n'+def.substring(0,1000):'');
+  try{
+    const res=await callClaude(prompt);
+    document.getElementById('conf-output').style.display='block';
+    await streamToEl('stream-conf',res);
+    document.getElementById('ia-conf-btn').onclick=()=>abrirIA('Redigir resposta à acusação ou alegações finais completas rebatendo os argumentos identificados:\n\n'+res.substring(0,600));
+  }catch(e){
+    document.getElementById('stream-conf').textContent='Erro: '+e.message;
+    document.getElementById('conf-output').style.display='block';
+  }
+  setLoading('loading-conf',false);
+}
+
+document.getElementById('prazo-tipo').addEventListener('change',function(){document.getElementById('custom-row').style.display=this.value==='custom'?'grid':'none';});
+function addDiasUteis(start,dias){let cur=new Date(start);let count=0;while(count<dias){cur.setDate(cur.getDate()+1);const dw=cur.getDay();if(dw!==0&&dw!==6)count++;}return cur;}
+function calcPrazo(){
+  const inicio=document.getElementById('prazo-inicio').value;if(!inicio)return;
+  const tipo=document.getElementById('prazo-tipo').value;
+  let dias=parseInt(tipo);if(tipo==='custom')dias=parseInt(document.getElementById('prazo-custom').value)||10;
+  const start=new Date(inicio+'T12:00:00');const fim=addDiasUteis(start,dias);
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const diff=Math.round((fim-hoje)/(1000*60*60*24));
+  document.getElementById('result-date').textContent=fim.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('result-dias').textContent=diff>0?'Restam '+diff+' dia(s) corridos':'Prazo encerrado';
+  const w=document.getElementById('result-warning');
+  if(diff<=3&&diff>0)w.textContent='⚠ Prazo crítico — protocole com urgência';
+  else if(diff<=0)w.textContent='✗ Prazo fatal encerrado';
+  else w.textContent='';
+  document.getElementById('calc-result').style.display='block';
+}
+
+let riscoCtx={};
+function calcRisco(){
+  const area=document.getElementById('r-area').value;
+  const posicao=document.getElementById('r-posicao').value;
+  const fase=document.getElementById('r-fase').value;
+  const prova=document.getElementById('r-prova').value;
+  riscoCtx={area,posicao,fase,prova};
+  let base=50;
+  if(posicao==='reu-criminal')base-=10;else if(posicao==='autor')base+=10;else base-=5;
+  if(prova==='forte')base+=28;else if(prova==='media')base+=5;else base-=22;
+  if(fase==='instrucao')base+=3;else if(fase==='sentenca')base+=8;else if(fase==='recurso')base-=8;
+  if(area.includes('criminal'))base-=5;
+  base=Math.max(5,Math.min(92,base));
+  document.getElementById('r-pct').textContent=base+'%';
+  let nivel,cor;
+  if(base>=65){nivel='Perspectiva favorável — absolvição ou êxito provável';cor:'#3a7d5a';cor='#5aad80';}
+  else if(base>=40){nivel='Risco moderado — resultado incerto';cor='#c87941';}
+  else{nivel='Risco alto — posição desfavorável';cor='#c0392b';}
+  const nv=document.getElementById('r-nivel');nv.textContent=nivel;nv.style.color=cor;
+  const bar=document.getElementById('r-bar');bar.style.width=base+'%';bar.style.background=cor;
+  const fatores=[
+    {t:'Posição processual',v:posicao==='reu-criminal'?'Réu/Acusado — ônus probatório é da acusação (in dubio pro reo)':posicao==='autor'?'Autor — iniciativa favorece a tese':'Réu cível — necessário construir defesa sólida'},
+    {t:'Força probatória da defesa',v:prova==='forte'?'Provas robustas — documentos e perícias fortalecem a tese':prova==='media'?'Provas parciais — coleta adicional recomendada antes da instrução':'Provas frágeis — estratégia deve focar em nulidades e falhas da acusação'},
+    {t:'Fase processual',v:fase==='recurso'?'Recurso — chances de reforma são menores, mas existem':fase==='sentenca'?'Pós-sentença — necessário identificar erros para recurso':'Fase inicial — ampla margem de atuação e coleta de provas'},
+    {t:'Área de atuação',v:area.includes('criminal')?'Criminal — princípio do in dubio pro reo favorece a defesa':'Empresarial — análise técnica de contratos e atos societários é central'},
+  ];
+  document.getElementById('r-fatores').innerHTML=fatores.map(f=>'<div class="risco-item"><span class="risco-bullet">—</span><div><strong style="font-size:12px;font-weight:500;color:#fff">'+f.t+':</strong> <span style="font-size:12px;color:var(--muted)">'+f.v+'</span></div></div>').join('');
+  document.getElementById('r-ia-text').textContent='"Estratégia de defesa para '+area+' com '+base+'% de perspectiva favorável"';
+  document.getElementById('ia-risco-btn').onclick=()=>abrirIA('Análise estratégica completa: processo na área de '+area+', cliente como '+posicao+', fase '+fase+', provas da defesa '+prova+'. Perspectiva de '+base+'%. Quais as melhores estratégias, teses jurídicas, riscos a mitigar e recomendações táticas?');
+  document.getElementById('risco-result').style.display='block';
+}
+
+function carregarExemplo(caso){
+  const ex={
+    criminal:'MINISTÉRIO PÚBLICO DO ESTADO DE SÃO PAULO\n\nDENÚNCIA — Art. 171 do Código Penal (Estelionato Empresarial)\n\nO Ministério Público, por seu Promotor de Justiça, vem oferecer denúncia em face de ROBERTO FARIAS, empresário, CPF 987.654.321-00.\n\nDOS FATOS: O denunciado, na qualidade de sócio-administrador da empresa Alfa Negócios Ltda., no período de janeiro a dezembro de 2023, teria induzido em erro diversas empresas fornecedoras, obtendo mercadorias mediante falsas promessas de pagamento. O prejuízo total apurado é de R$ 850.000,00. Há nos autos notas fiscais, e-mails e depoimento de 3 vítimas.\n\nDO DIREITO: Incide o art. 171, §3º do CP. Pena prevista: reclusão de 1 a 5 anos e multa.\n\nREQUER o recebimento da denúncia e citação do acusado.',
+    empresarial:'EXCELENTÍSSIMO SENHOR DOUTOR JUIZ DE DIREITO DA 2ª VARA EMPRESARIAL\n\nGRUPO ALFA LTDA., por seu advogado, vem propor AÇÃO DE DISSOLUÇÃO PARCIAL DE SOCIEDADE com APURAÇÃO DE HAVERES em face de MARCOS SOUZA (sócio dissidente).\n\nDOS FATOS: A sociedade foi constituída em 2018 com capital igualitário. Desde 2023, o réu passou a descumprir obrigações sociais, retirar pró-labore indevido e atuar em concorrência direta com a empresa. A affectio societatis está irremediavelmente rompida.\n\nDO DIREITO: Com base nos arts. 1.029 e 1.031 do CC, requer-se a dissolução parcial com apuração de haveres por balanço de determinação.\n\nPEDE a procedência com apuração de haveres e tutela de urgência para afastamento do sócio.',
+    sentenca:'SENTENÇA — Proc. 0012345-88.2024.8.26.0050\n\nCARLOS MENDONÇA foi denunciado pela prática do crime do art. 177, §1º do Código Penal (crimes societários — emissão de ações por preço inferior ao par).\n\nDO MÉRITO: A prova dos autos é frágil. O laudo pericial não é conclusivo sobre o dolo do acusado. As testemunhas de acusação apresentaram versões contraditórias. O acusado comprovou mediante documentos que agiu dentro dos limites estatutários.\n\nDISPOSITIVO: Considerando a insuficiência probatória e o princípio do in dubio pro reo, ABSOLVO o acusado Carlos Mendonça. Prazo para recurso da acusação: 5 dias.'
+  };
+  document.getElementById('peca-texto').value=ex[caso]||'';
+  nav('analise',document.querySelectorAll('.npill')[3]);
+}
+
+function showKeyModal(){
+  document.getElementById('key-modal-bg').classList.add('show');
+  const existing=localStorage.getItem('lb_api_key')||'';
+  if(existing)document.getElementById('key-input').value=existing;
+}
+function closeKeyModal(e){
+  if(e.target===document.getElementById('key-modal-bg'))
+    document.getElementById('key-modal-bg').classList.remove('show');
+}
+function saveKey(){
+  const key=document.getElementById('key-input').value.trim();
+  if(!key||!key.startsWith('sk-')){alert('Chave inválida. Deve começar com sk-ant-...');return;}
+  localStorage.setItem('lb_api_key',key);
+  document.getElementById('key-status').style.display='block';
+  updateCfgBtn();
+  setTimeout(()=>{
+    document.getElementById('key-status').style.display='none';
+    document.getElementById('key-modal-bg').classList.remove('show');
+  },1500);
+}
+function removeKey(){
+  if(confirm('Remover a chave de API?')){
+    localStorage.removeItem('lb_api_key');
+    document.getElementById('key-input').value='';
+    updateCfgBtn();
+    document.getElementById('key-modal-bg').classList.remove('show');
+  }
+}
+function updateCfgBtn(){
+  const btn=document.getElementById('cfg-btn');
+  if(localStorage.getItem('lb_api_key')){
+    btn.textContent='✓ IA';btn.classList.add('active-key');
+  } else {
+    btn.textContent='⚙ IA';btn.classList.remove('active-key');
+  }
+}
+// check on load
+updateCfgBtn();
+// auto-show modal if no key
+if(!localStorage.getItem('lb_api_key')){
+  setTimeout(()=>showKeyModal(),800);
+}
+
+</script>
+</body>
+</html>
